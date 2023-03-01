@@ -44,8 +44,7 @@
     - name: Update apt and install required system packages
       apt:
         pkg:
-          - curl
-          - vim
+          - fail2ban
           - git
           - ufw
         state: latest
@@ -60,3 +59,21 @@
       community.general.ufw:
         state: enabled
         default: deny
+        
+    - name: Creating a file with content
+      copy:
+        dest: "/etc/fail2ban/jail.local"
+        content: |
+          [DEFAULT]
+          banaction=ufw
+
+          [sshd]
+          #Set ban time to 5 minutes
+          bantime = 300
+          #Decrease the number of failed login attempts before banning to 3
+          maxretry=3
+        
+    - name: Restart service fail2ban, in all cases
+      ansible.builtin.service:
+        name: fail2ban
+        state: restarted
